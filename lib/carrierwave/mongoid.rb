@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 require 'mongoid'
-require 'mongoid-grid_fs'
 require 'carrierwave'
 require 'carrierwave/validations/active_model'
 
@@ -83,13 +82,15 @@ module CarrierWave
   end # Mongoid
 end # CarrierWave
 
-CarrierWave::Storage.autoload :GridFS, 'carrierwave/storage/grid_fs'
+if defined?(Mongoid::GridFs)
+  CarrierWave::Storage.autoload :GridFS, 'carrierwave/storage/grid_fs'
 
-class CarrierWave::Uploader::Base
-  add_config :grid_fs_access_url
+  class CarrierWave::Uploader::Base
+    add_config :grid_fs_access_url
 
-  configure do |config|
-    config.storage_engines[:grid_fs] = "CarrierWave::Storage::GridFS"
+    configure do |config|
+      config.storage_engines[:grid_fs] = "CarrierWave::Storage::GridFS"
+    end
   end
 end
 
