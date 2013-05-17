@@ -100,83 +100,85 @@ shared_examples_for "a GridFS connection" do
 
 end
 
-describe CarrierWave::Storage::GridFS do
+if defined?(Mongoid::GridFs)
+  describe CarrierWave::Storage::GridFS do
 
-  before do
-    @uploader = mock('an uploader')
-    @uploader.stub!(:grid_fs_access_url).and_return(nil)
-  end
-
-  context "when reusing an existing connection manually" do
     before do
-      @uploader.stub!(:grid_fs_connection).and_return(@database)
-
-      @grid = ::Mongoid::GridFs
-
-      @storage = CarrierWave::Storage::GridFS.new(@uploader)
-      @file = stub_tempfile('test.jpg', 'application/xml')
+      @uploader = mock('an uploader')
+      @uploader.stub!(:grid_fs_access_url).and_return(nil)
     end
 
-    it_should_behave_like "a GridFS connection"
-
-    # Calling #recreate_versions! on uploaders has been known to fail on
-    # remotely hosted files. This is due to a variety of issues, but this test
-    # makes sure that there's no unnecessary errors during the process
-    describe "#recreate_versions!" do
+    context "when reusing an existing connection manually" do
       before do
-        @uploader_class = Class.new(CarrierWave::Uploader::Base)
-        @uploader_class.class_eval{
-          include CarrierWave::MiniMagick
-          storage :grid_fs
+        @uploader.stub!(:grid_fs_connection).and_return(@database)
 
-          process :resize_to_fit => [10, 10]
-        }
+        @grid = ::Mongoid::GridFs
 
-        @versioned = @uploader_class.new
-
-        @versioned.store! File.open(file_path('portrait.jpg'))
+        @storage = CarrierWave::Storage::GridFS.new(@uploader)
+        @file = stub_tempfile('test.jpg', 'application/xml')
       end
 
-      after do
-        FileUtils.rm_rf(public_path)
+      it_should_behave_like "a GridFS connection"
+
+      # Calling #recreate_versions! on uploaders has been known to fail on
+      # remotely hosted files. This is due to a variety of issues, but this test
+      # makes sure that there's no unnecessary errors during the process
+      describe "#recreate_versions!" do
+        before do
+          @uploader_class = Class.new(CarrierWave::Uploader::Base)
+          @uploader_class.class_eval{
+            include CarrierWave::MiniMagick
+            storage :grid_fs
+
+            process :resize_to_fit => [10, 10]
+          }
+
+          @versioned = @uploader_class.new
+
+          @versioned.store! File.open(file_path('portrait.jpg'))
+        end
+
+        after do
+          FileUtils.rm_rf(public_path)
+        end
+
+        it "recreates versions stored remotely without error" do
+          lambda {
+            @versioned.recreate_versions!
+          }.should_not raise_error
+
+          @versioned.should be_present
+        end
       end
 
-      it "recreates versions stored remotely without error" do
-        lambda {
-          @versioned.recreate_versions!
-        }.should_not raise_error
+      describe "resize_to_fill" do
+        before do
+          @uploader_class = Class.new(CarrierWave::Uploader::Base)
+          @uploader_class.class_eval{
+            include CarrierWave::MiniMagick
+            storage :grid_fs
+          }
 
-        @versioned.should be_present
+          @versioned = @uploader_class.new
+
+          @versioned.store! File.open(file_path('portrait.jpg'))
+        end
+
+        after do
+          FileUtils.rm_rf(public_path)
+        end
+
+        it "resizes the file with out error" do
+          lambda {
+            @versioned.resize_to_fill(200, 200)
+          }.should_not raise_error
+
+        end
       end
     end
 
-    describe "resize_to_fill" do
-      before do
-        @uploader_class = Class.new(CarrierWave::Uploader::Base)
-        @uploader_class.class_eval{
-          include CarrierWave::MiniMagick
-          storage :grid_fs
-        }
-
-        @versioned = @uploader_class.new
-
-        @versioned.store! File.open(file_path('portrait.jpg'))
-      end
-
-      after do
-        FileUtils.rm_rf(public_path)
-      end
-
-      it "resizes the file with out error" do
-        lambda {
-          @versioned.resize_to_fill(200, 200)
-        }.should_not raise_error
-
-      end
+    after do
+      @grid.clear
     end
-  end
-
-  after do
-    @grid.clear
   end
 end

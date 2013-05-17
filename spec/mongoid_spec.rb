@@ -568,7 +568,7 @@ describe CarrierWave::Mongoid do
         end
 
         @class.class_eval do
-          embeds_many :mongo_locations
+          embeds_many :mongo_locations, cascade_callbacks: true
         end
 
         @doc = @class.new
@@ -578,6 +578,19 @@ describe CarrierWave::Mongoid do
       end
 
       include_examples "embedded documents"
+
+      it "attaches a new file to an existing document that had no file at first" do
+        doc = @class.new
+        doc.mongo_locations.build
+        doc.save.should be_true
+        doc.reload
+
+        doc.mongo_locations.first.image = stub_file('test.jpeg')
+        doc.save.should be_true
+        doc.reload
+
+        doc.mongo_locations.first[:image].should == 'test.jpeg'
+      end
 
       describe 'with double embedded documents' do
 
@@ -766,30 +779,34 @@ describe CarrierWave::Mongoid do
     end
   end
 
-  describe "with paranoia enabled" do
-    before do
-      @class = reset_mongo_class
-      @class.collection.drop
-      @class.class_eval do
-        include Mongoid::Paranoia
+  # Mongoid::Paranoia support is only part of Mongoid 3.x. It was removed from
+  # Mongoid 4.x.
+  if defined?(Mongoid::Paranoia)
+    describe "with paranoia enabled" do
+      before do
+        @class = reset_mongo_class
+        @class.collection.drop
+        @class.class_eval do
+          include Mongoid::Paranoia
+        end
+
+        @doc = @class.new(image: stub_file("old.jpeg"))
+        @doc.save.should be_true
       end
 
-      @doc = @class.new(image: stub_file("old.jpeg"))
-      @doc.save.should be_true
-    end
+      it "should not remove underlying image after #destroy" do
+        @doc.destroy.should be_true
+        @class.count.should eql(0)
+        @class.deleted.count.should eql(1)
+        File.exist?(public_path('uploads/old.jpeg')).should be_true
+      end
 
-    it "should not remove underlying image after #destroy" do
-      @doc.destroy.should be_true
-      @class.count.should eql(0)
-      @class.deleted.count.should eql(1)
-      File.exist?(public_path('uploads/old.jpeg')).should be_true
-    end
-
-    it "should remove underlying image after #destroy!" do
-      @doc.destroy!.should be_true
-      @class.count.should eql(0)
-      @class.deleted.count.should eql(0)
-      File.exist?(public_path('uploads/old.jpeg')).should be_false
+      it "should remove underlying image after #destroy!" do
+        @doc.destroy!.should be_true
+        @class.count.should eql(0)
+        @class.deleted.count.should eql(0)
+        File.exist?(public_path('uploads/old.jpeg')).should be_false
+      end
     end
   end
 
