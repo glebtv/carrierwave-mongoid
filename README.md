@@ -1,3 +1,5 @@
+# Fork with OPTIONAL gridfs
+
 # CarrierWave for Mongoid [![Gem Version](https://badge.fury.io/rb/carrierwave-mongoid.png)](http://badge.fury.io/rb/carrierwave-mongoid) [![Build Status](https://travis-ci.org/jnicklas/carrierwave-mongoid.png?branch=master)](http://travis-ci.org/jnicklas/carrierwave-mongoid) [![Code Climate](https://codeclimate.com/github/jnicklas/carrierwave-mongoid.png)](https://codeclimate.com/github/jnicklas/carrierwave-mongoid)
 
 This gem adds support for Mongoid and MongoDB's GridFS to
