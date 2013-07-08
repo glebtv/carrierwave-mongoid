@@ -5,6 +5,5 @@ pkg/*
 spec/public
 .rvmrc
 .ruby-version
-Gemfile.lock
 gemfiles/*.lock
 log/*
