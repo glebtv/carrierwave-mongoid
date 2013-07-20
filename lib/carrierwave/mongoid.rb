@@ -11,7 +11,8 @@ module CarrierWave
     # See +CarrierWave::Mount#mount_uploader+ for documentation
     #
     def mount_uploader(column, uploader=nil, options={}, &block)
-      field options[:mount_on] || column
+      field_name = options[:mount_on] || column
+      field field_name unless fields.keys.include?(field_name.to_s)
 
       super
 
