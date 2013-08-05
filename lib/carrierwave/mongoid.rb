@@ -12,7 +12,7 @@ module CarrierWave
     #
     def mount_uploader(column, uploader=nil, options={}, &block)
       field_name = options[:mount_on] || column
-      unless fields.keys.include?(field_name.to_s) || fields.values.map { |f| f.options[:as] }.include?(field_name.to_s)
+      unless fields.keys.include?(field_name.to_s) || fields.values.map { |f| f.options[:as].to_s }.include?(field_name.to_s)
         field field_name
       end
 
