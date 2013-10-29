@@ -569,6 +569,7 @@ describe CarrierWave::Mongoid do
 
         @class.class_eval do
           embeds_many :mongo_locations, cascade_callbacks: true
+          accepts_nested_attributes_for :mongo_locations
         end
 
         @doc = @class.new
@@ -590,6 +591,18 @@ describe CarrierWave::Mongoid do
         doc.reload
 
         doc.mongo_locations.first[:image].should == 'test.jpeg'
+      end
+
+      it "changes the file" do
+        @doc.update_attributes mongo_locations_attributes: { '0' => { _id: @embedded_doc._id, image: stub_file('test.jpeg') } }
+        @doc.reload
+        @doc.mongo_locations.first[:image].should == 'test.jpeg'
+      end
+
+      it "removes a file" do
+        @doc.update_attributes mongo_locations_attributes: { '0' => { _id: @embedded_doc._id, remove_image: "1" } }
+        @doc.reload
+        @doc.mongo_locations.first[:image].should_not be_present
       end
 
       describe 'with double embedded documents' do
@@ -664,6 +677,38 @@ describe CarrierWave::Mongoid do
         end
 
         include_examples "double embedded documents"
+      end
+    end
+
+    describe 'with embedded documents and nested attributes' do
+      before do
+        @embedded_doc_class = define_mongo_class('MongoLocation') do
+          include Mongoid::Document
+          mount_uploader :image, @uploader
+          embedded_in :mongo_user
+        end
+
+        @class.class_eval do
+          embeds_many :mongo_locations, cascade_callbacks: true
+          accepts_nested_attributes_for :mongo_locations
+        end
+
+        @doc = @class.new(mongo_locations_attributes: [{image: stub_file("old.jpeg")}])
+        @doc.save.should be_true
+        @embedded_doc = @doc.mongo_locations.first
+      end
+
+      it "should set the image on a save" do
+        @doc.reload
+        @doc.mongo_locations.first.image.path.should match(/old\.jpeg$/)
+        @embedded_doc.image.path.should match(/old\.jpeg$/)
+      end
+
+      it "should update the image on update_attributes" do
+        @doc.update_attributes(mongo_locations_attributes: [{id: @embedded_doc.id, image: stub_file("new.jpeg")}]).should be_true
+        @doc.reload
+        @doc.mongo_locations.first.image.path.should match(/new\.jpeg$/)
+        @embedded_doc.image.path.should match(/new\.jpeg$/)
       end
     end
   end

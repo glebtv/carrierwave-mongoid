@@ -2,7 +2,8 @@ PATH
   remote: .
   specs:
     glebtv-carrierwave-mongoid (0.6.4)
-      carrierwave (~> 0.9.0)
+      carrierwave (>= 0.8.0, < 0.10.0)
+      mongoid (>= 3.0, < 5.0)
       mongoid (>= 3.0, < 5.0)
 
 GEM
@@ -59,4 +60,4 @@ DEPENDENCIES
   mini_magick
   pry
   rake (~> 10.0)
-  rspec (~> 2.6)
+  rspec (~> 2.14)
