@@ -286,7 +286,7 @@ describe CarrierWave::Mongoid do
           @doc.save.should be_true
           @doc.reload
           @doc.image.should be_blank
-          @doc.image_identifier.should == ''
+          @doc.image_identifier.should be_blank
         end
 
       end
