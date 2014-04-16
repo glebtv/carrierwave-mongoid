@@ -1,5 +1,7 @@
 # Fork with OPTIONAL gridfs
 
+[![Build Status](https://travis-ci.org/glebtv/carrierwave-mongoid.svg)](https://travis-ci.org/glebtv/carrierwave-mongoid)
+
 # CarrierWave for Mongoid 
 
 See upstream for details: https://github.com/carrierwaveuploader/carrierwave-mongoid
