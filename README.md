@@ -1,6 +1,8 @@
 # Fork with OPTIONAL gridfs
 
 [![Build Status](https://travis-ci.org/glebtv/carrierwave-mongoid.svg)](https://travis-ci.org/glebtv/carrierwave-mongoid)
+[![Dependency Status](https://www.versioneye.com/user/projects/534e86f5fe0d07a8e100033a/badge.png)](https://www.versioneye.com/user/projects/534e86f5fe0d07a8e100033a)
+[![Gem Version](https://badge.fury.io/rb/glebtv-carrierwave-mongoid.svg)](http://badge.fury.io/rb/glebtv-carrierwave-mongoid)
 
 # CarrierWave for Mongoid 
 
